@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Block Dates & Slots - {{ turf.name }} | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h3 class="fw-bold text-navy mb-1"><i class="bi bi-calendar-x-fill text-warning me-2"></i>Block Slots: {{ turf.name }}</h3>
+                <p class="text-muted small mb-0">Block entire days or specific time intervals for maintenance, turf relaying, or private tournaments.</p>
+            </div>
+            <a href="{% url 'owner_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Block Form -->
+            <div class="col-lg-5">
+                <div class="card p-4 border shadow-sm bg-white" style="border-radius: 14px;">
+                    <h5 class="fw-bold text-navy mb-3"><i class="bi bi-lock-fill text-danger me-2"></i>Block a Date or Time Range</h5>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Date to Block *</label>
+                            {{ form.block_date }}
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small">From Time (Optional)</label>
+                                {{ form.start_time }}
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">To Time (Optional)</label>
+                                {{ form.end_time }}
+                            </div>
+                            <small class="text-muted">Leave start and end times blank to block the <strong>entire day</strong>.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Reason / Event Name</label>
+                            {{ form.reason }}
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 fw-bold text-dark">
+                            <i class="bi bi-slash-circle me-1"></i> Block Selected Slot
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Blocked List -->
+            <div class="col-lg-7">
+                <div class="card p-4 border shadow-sm bg-white" style="border-radius: 14px;">
+                    <h5 class="fw-bold text-navy mb-3">Currently Blocked Intervals ({{ blocked_slots.count }})</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time Interval</th>
+                                    <th>Reason</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in blocked_slots %}
+                                    <tr>
+                                        <td class="fw-bold text-navy">{{ slot.block_date|date:"D, d M Y" }}</td>
+                                        <td>
+                                            {% if slot.start_time and slot.end_time %}
+                                                <span class="badge bg-secondary">{{ slot.start_time|time:"h:i A" }} - {{ slot.end_time|time:"h:i A" }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Full Day Blocked</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="small text-muted">{{ slot.reason }}</td>
+                                        <td>
+                                            <a href="{% url 'delete_blocked_slot' slot_id=slot.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Release this blocked slot?');">
+                                                <i class="bi bi-unlock"></i> Unblock
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            No slots currently blocked. Your turf operating hours are fully available for bookings.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Turf Owner Admin Portal | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-4" style="background-color: #F5F8F6;">
+    <div class="container-fluid px-lg-4">
+        
+        <!-- Header Banner -->
+        <div class="card p-4 border shadow-sm bg-white mb-4" style="border-radius: 16px;">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold fs-2" style="width: 60px; height: 60px; background-color: #102A43 !important;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-primary px-2 py-1 mb-1">Turf Owner Administration</span>
+                        <h3 class="fw-bold text-navy mb-0">{{ user.profile.business_name|default:user.username }}</h3>
+                        <p class="text-muted small mb-0">Managing {{ total_turfs }} arena listing{{ total_turfs|pluralize }} | UPI ID: <code>{{ user.profile.upi_id|default:"Not configured" }}</code></p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'add_turf' %}" class="btn btn-primary-custom btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> Add New Turf
+                    </a>
+                    <a href="{% url 'owner_settings' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-qr-code me-1"></i> UPI & Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Stat Cards Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-card-title">Total Turfs</div>
+                        <div class="stat-card-value">{{ total_turfs }}</div>
+                        <small class="text-muted">Active Arenas</small>
+                    </div>
+                    <div class="stat-card-icon" style="background-color: #eaf6ef; color: #168447;">
+                        <i class="bi bi-building"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-card-title">Today's Matches</div>
+                        <div class="stat-card-value text-primary">{{ today_bookings }}</div>
+                        <small class="text-muted">Scheduled Today</small>
+                    </div>
+                    <div class="stat-card-icon" style="background-color: #e0f2fe; color: #0284c7;">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-card-title">Pending Verification</div>
+                        <div class="stat-card-value text-warning">{{ pending_count }}</div>
+                        <small class="text-muted">Awaiting Payment Check</small>
+                    </div>
+                    <div class="stat-card-icon" style="background-color: #fef3c7; color: #d97706;">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div>
+                        <div class="stat-card-title">Verified Revenue</div>
+                        <div class="stat-card-value text-success">₹{{ total_revenue|floatformat:0 }}</div>
+                        <small class="text-muted">{{ confirmed_count }} Confirmed Bookings</small>
+                    </div>
+                    <div class="stat-card-icon" style="background-color: #ecfdf5; color: #059669;">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <!-- Daily Bookings Trend (7 Days) -->
+            <div class="col-lg-5">
+                <div class="card p-4 border shadow-sm bg-white h-100" style="border-radius: 14px;">
+                    <h6 class="fw-bold text-navy mb-3">
+                        <i class="bi bi-graph-up text-success me-2"></i>Daily Bookings (Last 7 Days)
+                    </h6>
+                    <div style="height: 240px; position: relative;">
+                        <canvas id="dailyBookingsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Status Distribution Donut -->
+            <div class="col-lg-3">
+                <div class="card p-4 border shadow-sm bg-white h-100" style="border-radius: 14px;">
+                    <h6 class="fw-bold text-navy mb-3">
+                        <i class="bi bi-pie-chart-fill text-primary me-2"></i>Status Distribution
+                    </h6>
+                    <div style="height: 240px; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Revenue Trend -->
+            <div class="col-lg-4">
+                <div class="card p-4 border shadow-sm bg-white h-100" style="border-radius: 14px;">
+                    <h6 class="fw-bold text-navy mb-3">
+                        <i class="bi bi-bar-chart-line-fill text-warning me-2"></i>Monthly Revenue (₹)
+                    </h6>
+                    <div style="height: 240px; position: relative;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Payment Verification Priority Banner -->
+        {% if pending_count > 0 %}
+        <div class="card border-warning shadow-sm mb-4" style="border-radius: 14px; background-color: #fffdf5;">
+            <div class="card-header bg-warning bg-opacity-25 border-warning py-3">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Action Required: {{ pending_count }} Payment Verification{{ pending_count|pluralize }} Awaiting Approval
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Turf Venue</th>
+                                <th>Player Details</th>
+                                <th>Date & Slot</th>
+                                <th>Amount</th>
+                                <th>UPI Ref / UTR</th>
+                                <th>Payment Proof</th>
+                                <th class="text-end">Verification Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in pending_payments %}
+                                <tr>
+                                    <td class="font-monospace fw-bold text-navy">{{ p.booking.booking_id }}</td>
+                                    <td>{{ p.booking.turf.name }}</td>
+                                    <td>
+                                        <div class="fw-bold">{{ p.booking.player_name }}</div>
+                                        <small class="text-muted">{{ p.booking.player_phone }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-bold">{{ p.booking.booking_date|date:"d M Y" }}</div>
+                                        <div class="small text-muted">{{ p.booking.slot_display }}</div>
+                                    </td>
+                                    <td class="fw-bold text-success">₹{{ p.amount|floatformat:0 }}</td>
+                                    <td>
+                                        {% if p.upi_reference_id %}
+                                            <span class="badge bg-light text-dark border font-monospace px-2 py-1 fs-6">
+                                                {{ p.upi_reference_id }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted small">Not submitted</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if p.payment_screenshot %}
+                                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#proofModal{{ p.id }}">
+                                                <i class="bi bi-image"></i> View Proof
+                                            </button>
+
+                                            <!-- Modal for Payment Screenshot -->
+                                            <div class="modal fade" id="proofModal{{ p.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h6 class="modal-title fw-bold">Payment Screenshot - {{ p.booking.booking_id }}</h6>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body text-center p-3">
+                                                            <img src="{{ p.payment_screenshot.url }}" alt="Proof" class="img-fluid rounded border shadow-sm">
+                                                            <div class="mt-2 small text-muted">UTR Ref: <strong>{{ p.upi_reference_id }}</strong></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted small">No screenshot</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <!-- Approve Form -->
+                                            <form action="{% url 'verify_payment_action' payment_id=p.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="approve">
+                                                <button type="submit" class="btn btn-success btn-sm fw-bold">
+                                                    <i class="bi bi-check-lg"></i> Approve
+                                                </button>
+                                            </form>
+
+                                            <!-- Reject Form -->
+                                            <form action="{% url 'verify_payment_action' payment_id=p.id %}" method="POST" onsubmit="return confirm('Reject this payment? The slot will be released.');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="bi bi-x-lg"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Tabbed Management Section -->
+        <div class="card border shadow-sm bg-white" style="border-radius: 16px;">
+            <div class="card-header bg-white border-bottom pt-3 pb-0">
+                <ul class="nav nav-tabs border-bottom-0" id="ownerTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold py-3 px-4" id="turfs-tab" data-bs-toggle="tab" data-bs-target="#turfs-panel" type="button">
+                            <i class="bi bi-grid-fill text-success me-1"></i> My Turfs ({{ my_turfs.count }})
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold py-3 px-4" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings-panel" type="button">
+                            <i class="bi bi-journal-text text-primary me-1"></i> All Bookings ({{ all_bookings.count }})
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold py-3 px-4" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews-panel" type="button">
+                            <i class="bi bi-star-fill text-warning me-1"></i> Player Reviews ({{ reviews.count }})
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content" id="ownerTabsContent">
+                    
+                    <!-- TAB 1: MY TURFS LIST -->
+                    <div class="tab-pane fade show active" id="turfs-panel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-navy mb-0">Managed Venues</h5>
+                            <a href="{% url 'add_turf' %}" class="btn btn-primary-custom btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Add New Turf
+                            </a>
+                        </div>
+
+                        <div class="row g-3">
+                            {% for turf in my_turfs %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card h-100 border shadow-sm" style="border-radius: 12px; border-color: #d8e2dc !important;">
+                                        <div style="height: 160px; overflow: hidden; position: relative;">
+                                            {% if turf.featured_image %}
+                                                <img src="{{ turf.featured_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ turf.name }}">
+                                            {% else %}
+                                                <img src="https://images.unsplash.com/photo-1529900240041-22f114d18eb1?auto=format&fit=crop&w=600&q=80" class="w-100 h-100" style="object-fit: cover;" alt="{{ turf.name }}">
+                                            {% endif %}
+                                            <span class="badge bg-dark position-absolute top-0 start-0 m-2">{{ turf.turf_type }}</span>
+                                            {% if turf.is_demo %}
+                                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">Demo</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="card-body p-3 d-flex flex-column">
+                                            <h5 class="fw-bold text-navy mb-1">{{ turf.name }}</h5>
+                                            <div class="small text-muted mb-2"><i class="bi bi-geo-alt text-danger me-1"></i> {{ turf.area }}, {{ turf.city }}</div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center small mb-3">
+                                                <span>Rate: <strong>₹{{ turf.hourly_price|floatformat:0 }}/hr</strong></span>
+                                                <span>Rating: <strong class="text-warning">★ {{ turf.average_rating }}</strong></span>
+                                            </div>
+
+                                            <div class="mt-auto pt-2 border-top d-flex gap-1 flex-wrap">
+                                                <a href="{% url 'turf_detail' slug=turf.slug %}" class="btn btn-outline-success btn-sm flex-grow-1" target="_blank">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                <a href="{% url 'edit_turf' slug=turf.slug %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </a>
+                                                <a href="{% url 'manage_turf_images' slug=turf.slug %}" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                                                    <i class="bi bi-images"></i> Photos
+                                                </a>
+                                                <a href="{% url 'manage_blocked_slots' slug=turf.slug %}" class="btn btn-outline-warning btn-sm flex-grow-1 text-dark">
+                                                    <i class="bi bi-slash-circle"></i> Slots
+                                                </a>
+                                                <a href="{% url 'delete_turf' slug=turf.slug %}" class="btn btn-outline-danger btn-sm">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="col-12 text-center py-4">
+                                    <p class="text-muted">No turfs listed under your account.</p>
+                                    <a href="{% url 'add_turf' %}" class="btn btn-primary-custom btn-sm">Add Your First Turf</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: ALL BOOKINGS LIST -->
+                    <div class="tab-pane fade" id="bookings-panel">
+                        <h5 class="fw-bold text-navy mb-3">Customer Bookings Overview</h5>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Booking ID</th>
+                                        <th>Turf</th>
+                                        <th>Player Name</th>
+                                        <th>Match Date & Slot</th>
+                                        <th>Total (₹)</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for b in all_bookings %}
+                                        <tr>
+                                            <td class="font-monospace fw-bold">{{ b.booking_id }}</td>
+                                            <td>{{ b.turf.name }}</td>
+                                            <td>
+                                                <div>{{ b.player_name }}</div>
+                                                <small class="text-muted">{{ b.player_phone }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="small fw-bold">{{ b.booking_date|date:"d M Y" }}</div>
+                                                <div class="small text-muted">{{ b.slot_display }} ({{ b.sport }})</div>
+                                            </td>
+                                            <td class="fw-bold text-success">₹{{ b.total_price|floatformat:0 }}</td>
+                                            <td>
+                                                {% if b.status == 'CONFIRMED' %}
+                                                    <span class="status-badge-confirmed">Confirmed</span>
+                                                {% elif b.status == 'PENDING' %}
+                                                    <span class="status-badge-pending">Pending</span>
+                                                {% elif b.status == 'CANCELLED' %}
+                                                    <span class="status-badge-cancelled">Cancelled</span>
+                                                {% elif b.status == 'COMPLETED' %}
+                                                    <span class="status-badge-completed">Completed</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ b.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-1">
+                                                    <a href="{% url 'booking_receipt' booking_id=b.booking_id %}" class="btn btn-outline-secondary btn-sm" target="_blank" title="View Receipt">
+                                                        <i class="bi bi-printer"></i>
+                                                    </a>
+                                                    {% if b.status == 'CONFIRMED' %}
+                                                        <form action="{% url 'admin_booking_action' booking_id=b.booking_id %}" method="POST">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="action" value="complete">
+                                                            <button type="submit" class="btn btn-outline-primary btn-sm" title="Mark as Completed">
+                                                                <i class="bi bi-check2-circle"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">No customer bookings yet.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: CUSTOMER REVIEWS -->
+                    <div class="tab-pane fade" id="reviews-panel">
+                        <h5 class="fw-bold text-navy mb-3">Customer Ratings & Moderation</h5>
+                        
+                        <div class="row g-3">
+                            {% for rev in reviews %}
+                                <div class="col-md-6">
+                                    <div class="card p-3 border shadow-sm" style="border-radius: 12px;">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="fw-bold text-navy mb-0">{{ rev.turf.name }}</h6>
+                                                <small class="text-muted">By {{ rev.customer.first_name|default:rev.customer.username }} on {{ rev.created_at|date:"d M Y" }}</small>
+                                            </div>
+                                            <div class="text-warning">
+                                                {% for i in "12345"|make_list %}
+                                                    {% if forloop.counter <= rev.rating %}★{% else %}☆{% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <p class="small text-muted mb-3">"{{ rev.comment }}"</p>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                            <span class="badge {% if rev.is_approved %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {% if rev.is_approved %}Visible Online{% else %}Hidden by Moderation{% endif %}
+                                            </span>
+                                            
+                                            <div class="d-flex gap-2">
+                                                <form action="{% url 'moderate_review' review_id=rev.id %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="toggle">
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                        {% if rev.is_approved %}Hide{% else %}Approve{% endif %}
+                                                    </button>
+                                                </form>
+
+                                                <form action="{% url 'moderate_review' review_id=rev.id %}" method="POST" onsubmit="return confirm('Permanently remove this review?');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="col-12 text-center py-4 text-muted">
+                                    No customer reviews submitted yet.
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Daily Bookings Chart
+    const dailyCtx = document.getElementById('dailyBookingsChart');
+    if (dailyCtx) {
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: {{ daily_labels|safe }},
+                datasets: [{
+                    label: 'Bookings',
+                    data: {{ daily_counts|safe }},
+                    borderColor: '#168447',
+                    backgroundColor: 'rgba(22, 132, 71, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#168447'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    // 2. Booking Status Distribution Donut Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ status_labels|safe }},
+                datasets: [{
+                    data: {{ status_counts|safe }},
+                    backgroundColor: ['#168447', '#f59e0b', '#ef4444', '#64748b'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // 3. Monthly Revenue Chart
+    const revCtx = document.getElementById('revenueChart');
+    if (revCtx) {
+        new Chart(revCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ revenue_labels|safe }},
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: {{ revenue_data|safe }},
+                    backgroundColor: '#102A43',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

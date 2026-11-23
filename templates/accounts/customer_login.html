@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Player Login | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card p-4 p-md-5 border shadow-sm bg-white" style="border-radius: 16px;">
+                    <div class="text-center mb-4">
+                        <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 58px; height: 58px; background-color: #eaf6ef; color: #168447;">
+                            <i class="bi bi-person-fill fs-2"></i>
+                        </div>
+                        <h3 class="fw-bold text-navy">Customer Login</h3>
+                        <p class="text-muted small">Access your player profile, booking history, and receipts.</p>
+                    </div>
+
+                    <!-- Demo Credentials Banner -->
+                    <div class="alert alert-light border small mb-4 text-navy" style="background-color: #f8fafc; border-color: #cbd5e1 !important;">
+                        <div class="fw-bold text-success mb-1"><i class="bi bi-key-fill"></i> Sample Demo Customer Account:</div>
+                        <div>Username: <code class="fw-bold">customer</code></div>
+                        <div>Password: <code class="fw-bold">cust1234</code></div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person text-success"></i></span>
+                                <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label">Password</label>
+                                <a href="{% url 'forgot_password' %}" class="small text-decoration-none">Forgot?</a>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock text-success"></i></span>
+                                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom w-100 py-2 fs-6 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Account
+                        </button>
+                    </form>
+
+                    <div class="text-center pt-3 border-top">
+                        <p class="small text-muted mb-2">New player? <a href="{% url 'customer_register' %}" class="fw-bold">Register as Customer</a></p>
+                        <p class="small text-muted mb-0">Are you a Turf Owner? <a href="{% url 'owner_login' %}" class="fw-bold text-navy">Owner Admin Login &rarr;</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

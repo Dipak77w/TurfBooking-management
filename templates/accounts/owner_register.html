@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Turf Arena | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="card p-4 p-md-5 border shadow-sm bg-white" style="border-radius: 16px;">
+                    <div class="text-center mb-4">
+                        <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 58px; height: 58px; background-color: #eaf1f8; color: #102A43;">
+                            <i class="bi bi-building-add fs-2"></i>
+                        </div>
+                        <h3 class="fw-bold text-navy">Turf Owner Registration</h3>
+                        <p class="text-muted small">Register your arena business to list turfs and accept direct UPI payments.</p>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Business / Arena Name</label>
+                                {{ form.business_name }}
+                                {% if form.business_name.errors %}<div class="text-danger small">{{ form.business_name.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Owner Full Name</label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Admin Username</label>
+                                {{ form.username }}
+                                {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Phone</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}<div class="text-danger small">{{ form.phone.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Official Email</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="p-3 mb-3 rounded border" style="background-color: #f8fafc;">
+                            <h6 class="fw-bold text-navy mb-2"><i class="bi bi-qr-code text-success me-1"></i> UPI QR Payment Settings</h6>
+                            <div class="mb-2">
+                                <label class="form-label small">Your UPI ID (VPA)</label>
+                                {{ form.upi_id }}
+                                <small class="text-muted d-block mt-1">e.g. yourname@okhdfcbank or turf@paytm</small>
+                            </div>
+                            <div>
+                                <label class="form-label small">Upload UPI QR Scanner Image (Optional now, can add later)</label>
+                                {{ form.upi_qr_image }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Admin Password</label>
+                                {{ form.password }}
+                                {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirm Password</label>
+                                {{ form.confirm_password }}
+                                {% if form.confirm_password.errors %}<div class="text-danger small">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-navy-custom w-100 py-2 fs-6 mb-3">
+                            <i class="bi bi-shield-check me-1"></i> Register Turf Owner Account
+                        </button>
+                    </form>
+
+                    <div class="text-center pt-3 border-top">
+                        <p class="small text-muted mb-0">Already an owner? <a href="{% url 'owner_login' %}" class="fw-bold text-navy">Admin Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

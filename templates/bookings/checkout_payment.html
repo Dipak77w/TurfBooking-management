@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout & UPI Payment | {{ booking.booking_id }}{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <!-- Progress Steps -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center text-center">
+                    <div class="flex-grow-1">
+                        <div class="rounded-circle bg-success text-white mx-auto d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">1</div>
+                        <div class="small fw-bold text-success mt-1">Slot Selected</div>
+                    </div>
+                    <div class="flex-grow-1 border-top border-2 border-success"></div>
+                    <div class="flex-grow-1">
+                        <div class="rounded-circle bg-primary text-white mx-auto d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">2</div>
+                        <div class="small fw-bold text-primary mt-1">Scan & Pay (UPI)</div>
+                    </div>
+                    <div class="flex-grow-1 border-top border-2 border-secondary"></div>
+                    <div class="flex-grow-1">
+                        <div class="rounded-circle bg-light border text-muted mx-auto d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">3</div>
+                        <div class="small text-muted mt-1">Confirmation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center g-4">
+            <!-- Left Column: Booking Summary -->
+            <div class="col-lg-5">
+                <div class="card p-4 border shadow-sm bg-white" style="border-radius: 16px;">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h5 class="fw-bold text-navy mb-0">Booking Details</h5>
+                        <span class="badge bg-warning text-dark font-monospace">{{ booking.booking_id }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Turf Arena</div>
+                        <h5 class="fw-bold text-navy mb-0">{{ turf.name }}</h5>
+                        <p class="small text-muted mb-0"><i class="bi bi-geo-alt text-danger me-1"></i> {{ turf.area }}, {{ turf.city }}</p>
+                    </div>
+
+                    <table class="table table-sm table-borderless mb-3">
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-calendar-event me-1"></i> Date:</td>
+                            <td class="text-end fw-bold text-navy">{{ booking.booking_date|date:"l, d M Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-clock me-1"></i> Slot Time:</td>
+                            <td class="text-end fw-bold text-navy">{{ booking.slot_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-trophy me-1"></i> Sport:</td>
+                            <td class="text-end fw-bold text-navy">{{ booking.sport }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-person me-1"></i> Player Name:</td>
+                            <td class="text-end fw-bold text-navy">{{ booking.player_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted"><i class="bi bi-telephone me-1"></i> Phone:</td>
+                            <td class="text-end fw-bold text-navy">{{ booking.player_phone }}</td>
+                        </tr>
+                    </table>
+
+                    <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="text-muted small">Total Amount Payable</span>
+                            <div class="fs-4 fw-extrabold text-success">₹{{ booking.total_price|floatformat:2 }}</div>
+                        </div>
+                        <span class="badge bg-warning text-dark px-3 py-2">Pending Payment</span>
+                    </div>
+
+                    <div class="alert alert-info small mb-0">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        <strong>Cancellation Policy:</strong> You can cancel this booking for free up to 30 minutes before match start time ({{ booking.start_time|time:"h:i A" }}).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: UPI QR Scanner & Proof Submission Form -->
+            <div class="col-lg-7">
+                <div class="card p-4 p-md-5 border shadow-sm bg-white" style="border-radius: 16px;">
+                    <div class="text-center mb-3">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 mb-2">Manual UPI Verification</span>
+                        <h4 class="fw-bold text-navy">Pay via UPI QR Scanner</h4>
+                        <p class="text-muted small">Scan the QR code using Google Pay, PhonePe, Paytm, or BHIM, and submit the 12-digit UTR reference ID below.</p>
+                    </div>
+
+                    <!-- UPI Scanner Card -->
+                    <div class="upi-scanner-card mb-4">
+                        <div class="upi-qr-image-wrapper">
+                            {% if upi_qr_url %}
+                                <img src="{{ upi_qr_url }}" alt="UPI QR Code" class="upi-qr-image">
+                            {% else %}
+                                <!-- High resolution SVG dynamic QR representation for demo -->
+                                <svg width="190" height="190" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="200" height="200" fill="#ffffff"/>
+                                    <!-- QR Corners -->
+                                    <rect x="20" y="20" width="50" height="50" fill="#102A43"/>
+                                    <rect x="30" y="30" width="30" height="30" fill="#ffffff"/>
+                                    <rect x="37" y="37" width="16" height="16" fill="#168447"/>
+                                    
+                                    <rect x="130" y="20" width="50" height="50" fill="#102A43"/>
+                                    <rect x="140" y="30" width="30" height="30" fill="#ffffff"/>
+                                    <rect x="147" y="37" width="16" height="16" fill="#168447"/>
+
+                                    <rect x="20" y="130" width="50" height="50" fill="#102A43"/>
+                                    <rect x="30" y="140" width="30" height="30" fill="#ffffff"/>
+                                    <rect x="37" y="147" width="16" height="16" fill="#168447"/>
+
+                                    <!-- QR Data Matrix Pattern -->
+                                    <rect x="85" y="25" width="14" height="14" fill="#102A43"/>
+                                    <rect x="105" y="25" width="14" height="14" fill="#102A43"/>
+                                    <rect x="85" y="45" width="14" height="14" fill="#168447"/>
+                                    <rect x="105" y="65" width="14" height="14" fill="#102A43"/>
+                                    <rect x="40" y="85" width="14" height="14" fill="#102A43"/>
+                                    <rect x="60" y="85" width="14" height="14" fill="#168447"/>
+                                    <rect x="85" y="85" width="30" height="30" fill="#102A43"/>
+                                    <rect x="135" y="85" width="14" height="14" fill="#102A43"/>
+                                    <rect x="155" y="85" width="14" height="14" fill="#168447"/>
+                                    <rect x="85" y="130" width="14" height="14" fill="#168447"/>
+                                    <rect x="105" y="145" width="14" height="14" fill="#102A43"/>
+                                    <rect x="135" y="130" width="20" height="20" fill="#102A43"/>
+                                    <rect x="165" y="155" width="14" height="14" fill="#168447"/>
+                                </svg>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-2">
+                            <span class="upi-id-badge">
+                                <i class="bi bi-wallet2 text-success"></i> {{ upi_id }}
+                            </span>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="copy-upi-btn" data-upi-id="{{ upi_id }}">
+                            <i class="bi bi-clipboard me-1"></i> Copy UPI ID
+                        </button>
+
+                        <div class="mt-3 d-flex justify-content-center gap-2 flex-wrap">
+                            <span class="badge bg-light text-dark border"><i class="bi bi-google"></i> Google Pay</span>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-phone"></i> PhonePe</span>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-credit-card"></i> Paytm</span>
+                            <span class="badge bg-light text-dark border"><i class="bi bi-bank"></i> BHIM UPI</span>
+                        </div>
+                    </div>
+
+                    <!-- Submission Form -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                1. UPI Transaction Reference ID (UTR / Ref No.) *
+                            </label>
+                            {{ form.upi_reference_id }}
+                            <small class="text-muted d-block mt-1">12-digit transaction number displayed in your UPI payment receipt.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                2. Upload Payment Screenshot Proof (Optional)
+                            </label>
+                            {{ form.payment_screenshot }}
+                            <small class="text-muted d-block mt-1">Upload JPEG/PNG screenshot showing paid amount of ₹{{ booking.total_price }}.</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary-custom py-2 fs-6">
+                                <i class="bi bi-send-check me-1"></i> Submit Payment for Admin Verification
+                            </button>
+
+                            <!-- Demo helper for project presentation -->
+                            <div class="d-flex gap-2 mt-2">
+                                <button type="button" id="demo-fill-utr-btn" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                                    <i class="bi bi-magic me-1"></i> Auto-Fill Sample UTR
+                                </button>
+                                <button type="submit" name="demo_submit" value="1" class="btn btn-outline-success btn-sm flex-grow-1">
+                                    <i class="bi bi-lightning-charge me-1"></i> Demo Quick Submit
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

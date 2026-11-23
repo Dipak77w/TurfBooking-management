@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Support & Arena Inquiries | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-4">
+                    <span class="text-success fw-bold text-uppercase small">Get In Touch</span>
+                    <h2 class="fw-bold mt-1 text-navy">Contact MiniTurf Arena Support</h2>
+                    <p class="text-muted">Have a question regarding bookings, cancellations, or turf onboarding? Reach out to us!</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="card p-4 border-0 shadow-sm h-100 bg-white" style="border-radius: 12px;">
+                            <h5 class="fw-bold text-navy mb-3">Arena Support Desk</h5>
+                            
+                            <div class="mb-3">
+                                <div class="text-muted small">Headquarters:</div>
+                                <div class="fw-semibold text-navy"><i class="bi bi-geo-alt text-danger me-1"></i> CIDCO Cannaught Place, Jalna Road, Chhatrapati Sambhajinagar</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="text-muted small">Direct Helpline:</div>
+                                <div class="fw-semibold text-navy"><i class="bi bi-telephone-fill text-success me-1"></i> +91 98765 43210</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="text-muted small">Email Address:</div>
+                                <div class="fw-semibold text-navy"><i class="bi bi-envelope-fill text-primary me-1"></i> support@miniturfarena.com</div>
+                            </div>
+
+                            <div class="mt-auto pt-3 border-top">
+                                <div class="text-muted small">Operating Hours:</div>
+                                <div class="fw-bold text-success">06:00 AM – 11:30 PM (All 7 Days)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="card p-4 border shadow-sm bg-white" style="border-radius: 12px;">
+                            <h5 class="fw-bold text-navy mb-3">Send a Message</h5>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Your Name</label>
+                                    <input type="text" name="name" class="form-control" placeholder="e.g. Anand Deshmukh" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" name="email" class="form-control" placeholder="anand@example.com" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Subject</label>
+                                    <input type="text" name="subject" class="form-control" placeholder="Booking query / Turf listing partnership" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Message</label>
+                                    <textarea name="message" class="form-control" rows="4" placeholder="How can we assist you today?" required></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                                    <i class="bi bi-send-fill me-1"></i> Submit Inquiry
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

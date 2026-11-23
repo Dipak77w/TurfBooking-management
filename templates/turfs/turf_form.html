@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Turf | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card p-4 p-md-5 border shadow-sm bg-white" style="border-radius: 16px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 flex-wrap gap-2">
+                        <div>
+                            <h3 class="fw-bold text-navy mb-1"><i class="bi bi-building text-success me-2"></i>{{ action }} Turf Listing</h3>
+                            <p class="text-muted small mb-0">Fill in all details to display your arena attractively to players.</p>
+                        </div>
+                        <a href="{% url 'owner_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Dashboard
+                        </a>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Basic Info -->
+                        <h5 class="fw-bold text-navy mb-3">1. Basic Information</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Turf Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">City *</label>
+                                {{ form.city }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Area / Locality *</label>
+                                {{ form.area }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Mobile Number *</label>
+                                {{ form.contact_number }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Complete Street Address *</label>
+                            {{ form.address }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Google Maps URL or Link</label>
+                            {{ form.google_maps_url }}
+                            <small class="text-muted">Allows players to navigate directly to your venue.</small>
+                        </div>
+
+                        <!-- Specifications -->
+                        <h5 class="fw-bold text-navy mb-3 pt-3 border-top">2. Arena Specifications & Pricing</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Primary Turf Type *</label>
+                                {{ form.turf_type }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Pitch Size / Dimensions *</label>
+                                {{ form.size }}
+                                <small class="text-muted">e.g. 110 x 65 ft (7-A-Side)</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Available Sports *</label>
+                                {{ form.available_sports }}
+                                <small class="text-muted">Comma-separated: Football, Box Cricket, Cricket, Badminton</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Hourly Price (₹) *</label>
+                                {{ form.hourly_price }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Opening Time *</label>
+                                {{ form.opening_time }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Closing Time *</label>
+                                {{ form.closing_time }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Slot Duration (Mins)</label>
+                                {{ form.slot_duration_minutes }}
+                            </div>
+                        </div>
+
+                        <!-- Amenities & Details -->
+                        <h5 class="fw-bold text-navy mb-3 pt-3 border-top">3. Amenities, Photos & Rules</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Available Facilities *</label>
+                            {{ form.facilities }}
+                            <small class="text-muted">Comma-separated: Floodlights, Parking, Washroom, Changing Room, Drinking Water, First Aid</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Primary Cover Photo</label>
+                            {{ form.featured_image }}
+                            {% if turf.featured_image %}
+                                <div class="mt-2 small text-muted">
+                                    Current Photo: <a href="{{ turf.featured_image.url }}" target="_blank">View Image</a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description *</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Rules and Regulations</label>
+                            {{ form.rules_and_regulations }}
+                        </div>
+
+                        <div class="form-check mb-4 p-3 bg-light rounded border">
+                            {{ form.is_demo }}
+                            <label class="form-check-label fw-bold text-navy ms-2" for="id_is_demo">
+                                Mark as Demonstration Listing (College Project Demo)
+                            </label>
+                            <small class="d-block text-muted ms-4">Displays a clear "Demonstration Listing" badge to project reviewers.</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'owner_dashboard' %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary-custom px-4 py-2">
+                                <i class="bi bi-check2-circle me-1"></i> Save Turf Listing
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

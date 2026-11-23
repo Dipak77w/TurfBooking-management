@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Player Profile | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="card p-4 p-md-5 border shadow-sm bg-white" style="border-radius: 16px;">
+                    <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold fs-3" style="width: 60px; height: 60px;">
+                            {{ user.first_name|first|default:user.username|first|upper }}
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-navy mb-0">{{ user.first_name }} {{ user.last_name }}</h4>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Player Account: @{{ user.username }}</span>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Email Address</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Contact Phone</label>
+                                {{ form.phone }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">City</label>
+                            {{ form.city }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Address / Landmark</label>
+                            {{ form.address }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-save me-1"></i> Save Profile Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

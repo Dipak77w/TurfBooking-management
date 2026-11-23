@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Turfs in Chhatrapati Sambhajinagar | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-4" style="background-color: #F5F8F6;">
+    <div class="container">
+        <!-- Breadcrumb & Header -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Explore Turfs</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold text-navy mb-1">Available Sports Turfs</h2>
+                <p class="text-muted small mb-0">Showing {{ turfs.count }} venue{{ turfs.count|pluralize }} in Chhatrapati Sambhajinagar, Maharashtra</p>
+            </div>
+            
+            <!-- Quick Sport Filter Pills -->
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'turf_list' %}" class="btn btn-sm {% if not selected_sport %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                    All Sports
+                </a>
+                {% for sport_name in sports_options %}
+                    <a href="{% url 'turf_list' %}?sport={{ sport_name }}" class="btn btn-sm {% if selected_sport == sport_name %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                        {{ sport_name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3">
+                <div class="card p-4 border shadow-sm bg-white sticky-top" style="top: 90px; border-radius: 12px;">
+                    <h5 class="fw-bold text-navy mb-3 pb-2 border-bottom">
+                        <i class="bi bi-funnel-fill text-success me-1"></i> Filter Turfs
+                    </h5>
+
+                    <form method="GET" action="{% url 'turf_list' %}">
+                        <!-- Search Keyword -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Search Name or Area</label>
+                            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="e.g. CIDCO, Football, Arena">
+                        </div>
+
+                        <!-- Sport -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Sport Type</label>
+                            <select name="sport" class="form-select">
+                                <option value="">Any Sport</option>
+                                <option value="Football" {% if selected_sport == 'Football' %}selected{% endif %}>Football</option>
+                                <option value="Box Cricket" {% if selected_sport == 'Box Cricket' %}selected{% endif %}>Box Cricket</option>
+                                <option value="Cricket" {% if selected_sport == 'Cricket' %}selected{% endif %}>Cricket</option>
+                                <option value="Badminton" {% if selected_sport == 'Badminton' %}selected{% endif %}>Badminton</option>
+                                <option value="Tennis" {% if selected_sport == 'Tennis' %}selected{% endif %}>Tennis</option>
+                            </select>
+                        </div>
+
+                        <!-- Max Hourly Price -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Maximum Hourly Rate</label>
+                            <select name="max_price" class="form-select">
+                                <option value="">Any Price</option>
+                                <option value="750" {% if selected_price == '750' %}selected{% endif %}>Up to ₹750/hr</option>
+                                <option value="900" {% if selected_price == '900' %}selected{% endif %}>Up to ₹900/hr</option>
+                                <option value="1100" {% if selected_price == '1100' %}selected{% endif %}>Up to ₹1,100/hr</option>
+                                <option value="1500" {% if selected_price == '1500' %}selected{% endif %}>Up to ₹1,500/hr</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort By -->
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Sort Venues</label>
+                            <select name="sort" class="form-select">
+                                <option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Newest / Featured</option>
+                                <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-search me-1"></i> Apply Filters
+                            </button>
+                            <a href="{% url 'turf_list' %}" class="btn btn-outline-secondary btn-sm">
+                                Clear All Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Turfs Grid -->
+            <div class="col-lg-9">
+                <div class="row g-4">
+                    {% for turf in turfs %}
+                    <div class="col-md-6">
+                        <div class="turf-card">
+                            <div class="turf-card-img-wrapper">
+                                {% if turf.featured_image %}
+                                    <img src="{{ turf.featured_image.url }}" alt="{{ turf.name }}" class="turf-card-img">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1529900240041-22f114d18eb1?auto=format&fit=crop&w=800&q=80" alt="{{ turf.name }}" class="turf-card-img">
+                                {% endif %}
+                                <span class="turf-card-badge">{{ turf.turf_type }}</span>
+                                <div class="turf-card-price">
+                                    ₹{{ turf.hourly_price|floatformat:0 }} <small class="text-muted fw-normal">/ hr</small>
+                                </div>
+                            </div>
+
+                            <div class="turf-card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h5 class="turf-card-title mb-0">{{ turf.name }}</h5>
+                                    <span class="badge bg-warning text-dark fw-bold">
+                                        <i class="bi bi-star-fill text-dark me-1"></i>
+                                        {% if turf.average_rating > 0 %}{{ turf.average_rating }}{% else %}4.8{% endif %}
+                                        <small class="text-muted">({{ turf.total_reviews }})</small>
+                                    </span>
+                                </div>
+
+                                <div class="turf-card-location">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                    <span>{{ turf.area }}, {{ turf.city }}</span>
+                                </div>
+
+                                <div class="mb-2">
+                                    {% for sport in turf.get_sports_list %}
+                                        <span class="badge-sport">{{ sport }}</span>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="mb-3 d-flex flex-wrap gap-1">
+                                    {% for facility in turf.get_facilities_list|slice:":3" %}
+                                        <span class="badge-facility"><i class="bi bi-check-circle-fill text-success"></i> {{ facility }}</span>
+                                    {% endfor %}
+                                    {% if turf.get_facilities_list|length > 3 %}
+                                        <span class="badge-facility">+{{ turf.get_facilities_list|length|add:"-3" }} more</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if turf.is_demo %}
+                                    <div class="mb-3">
+                                        <span class="badge-demo"><i class="bi bi-info-circle"></i> Demonstration Listing</span>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                    <div class="small text-muted">
+                                        <i class="bi bi-aspect-ratio me-1"></i> Size: <strong>{{ turf.size }}</strong>
+                                    </div>
+                                    <a href="{% url 'turf_detail' slug=turf.slug %}" class="btn btn-primary-custom btn-sm">
+                                        View & Book <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="card p-5 bg-white border">
+                            <i class="bi bi-calendar-x text-muted display-4 mb-3"></i>
+                            <h4 class="fw-bold text-navy">No turfs match your filter</h4>
+                            <p class="text-muted">Try clearing some filter options or search for another area.</p>
+                            <div>
+                                <a href="{% url 'turf_list' %}" class="btn btn-primary-custom">
+                                    View All Turfs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

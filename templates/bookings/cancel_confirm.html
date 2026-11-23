@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Booking - {{ booking.booking_id }} | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7 col-lg-6">
+                <div class="card p-4 p-md-5 border shadow-sm bg-white" style="border-radius: 16px;">
+                    
+                    <div class="text-center mb-4">
+                        <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width: 60px; height: 60px; background-color: #fef2f2; color: #dc2626;">
+                            <i class="bi bi-calendar-x-fill fs-2"></i>
+                        </div>
+                        <h3 class="fw-bold text-navy">Cancel Match Booking</h3>
+                        <span class="badge bg-secondary font-monospace">{{ booking.booking_id }}</span>
+                    </div>
+
+                    <!-- Booking Summary Card -->
+                    <div class="p-3 rounded bg-light border mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Turf Arena:</span>
+                            <strong class="text-navy">{{ booking.turf.name }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted small">Date & Slot:</span>
+                            <span class="fw-bold text-navy">{{ booking.booking_date|date:"D, d M Y" }} ({{ booking.slot_display }})</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Total Paid/Reserved:</span>
+                            <span class="fw-bold text-success">₹{{ booking.total_price }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Policy Check Section -->
+                    {% if can_cancel %}
+                        <div class="alert alert-warning small mb-4">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            <strong>Cancellation Policy Verified:</strong> Your match starts at <strong>{{ booking.start_time|time:"h:i A" }}</strong>. Since there is more than 30 minutes remaining before kickoff, your cancellation is approved. The slot will be released immediately for other players.
+                        </div>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="form-label">Reason for Cancellation (Optional)</label>
+                                <textarea name="cancellation_reason" class="form-control" rows="3" placeholder="e.g. Teammates unavailable / Weather / Rescheduling..."></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-between gap-2">
+                                <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary px-4">
+                                    <i class="bi bi-arrow-left me-1"></i> Keep Booking
+                                </a>
+                                <button type="submit" class="btn btn-danger px-4 fw-bold">
+                                    <i class="bi bi-x-circle me-1"></i> Confirm & Release Slot
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-danger mb-4">
+                            <h6 class="fw-bold mb-1"><i class="bi bi-lock-fill me-1"></i> Cancellation Locked</h6>
+                            <p class="small mb-0">{{ reason }}</p>
+                        </div>
+
+                        <div class="card p-3 border-0 bg-light text-muted small mb-4">
+                            <strong>Why is cancellation disabled within 30 minutes?</strong><br>
+                            To prevent last-minute ground vacancy and ensure lighting/ground preparation, the management enforces a minimum 30-minute advance cancellation window.
+                        </div>
+
+                        <div class="text-center">
+                            <a href="{% url 'customer_dashboard' %}" class="btn btn-primary-custom px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Return to My Bookings
+                            </a>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

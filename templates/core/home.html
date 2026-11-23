@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Book Your Game. Play Your Passion. | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">
+                    <i class="bi bi-geo-alt-fill"></i> Premier Turfs in Chhatrapati Sambhajinagar
+                </span>
+                <h1 class="display-4 fw-extrabold mb-3">Book Your Game.<br><span class="text-warning">Play Your Passion.</span></h1>
+                <p class="lead mb-4">
+                    Reserve premier football, box cricket, and badminton arenas in seconds. Real-time dynamic slots, instant double-booking prevention, and seamless UPI QR code verification.
+                </p>
+                <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
+                    <a href="{% url 'turf_list' %}" class="btn btn-warning btn-lg fw-bold px-4 py-2 text-dark shadow">
+                        <i class="bi bi-search me-1"></i> Explore Turfs Now
+                    </a>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'customer_register' %}" class="btn btn-outline-light btn-lg fw-bold px-4 py-2">
+                            <i class="bi bi-person-plus me-1"></i> Register as Player
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <!-- Search Box Card -->
+                <div class="hero-search-card">
+                    <h5 class="fw-bold text-navy mb-3">
+                        <i class="bi bi-sliders text-success me-2"></i>Quick Turf Search
+                    </h5>
+                    <form action="{% url 'turf_list' %}" method="GET">
+                        <div class="mb-3">
+                            <label class="form-label">Search Location or Arena</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search text-success"></i></span>
+                                <input type="text" name="q" class="form-control" placeholder="e.g. CIDCO, Beed Bypass, Greenfield">
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label">Sport Category</label>
+                                <select name="sport" class="form-select">
+                                    <option value="">All Sports</option>
+                                    <option value="Football">Football</option>
+                                    <option value="Box Cricket">Box Cricket</option>
+                                    <option value="Cricket">Cricket</option>
+                                    <option value="Badminton">Badminton</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">Max Price (₹/Hr)</label>
+                                <select name="max_price" class="form-select">
+                                    <option value="">Any Price</option>
+                                    <option value="800">Under ₹800</option>
+                                    <option value="1000">Under ₹1,000</option>
+                                    <option value="1200">Under ₹1,200</option>
+                                    <option value="1500">Under ₹1,500</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom w-100 py-2 fs-6">
+                            <i class="bi bi-check2-circle me-1"></i> Check Available Venues
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sports Categories Section -->
+<section class="py-5" style="background-color: #ffffff;">
+    <div class="container">
+        <div class="text-center mb-4">
+            <span class="text-success fw-bold text-uppercase small tracking-wide">Select Your Sport</span>
+            <h2 class="fw-bold mt-1">Popular Sports Arenas</h2>
+            <p class="text-muted">Choose your preferred sport to view purpose-built synthetic and natural grass courts.</p>
+        </div>
+
+        <div class="row g-4">
+            {% for cat in sports_categories %}
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'turf_list' %}?sport={{ cat.name }}" class="text-decoration-none">
+                    <div class="card h-100 border p-4 text-center hover-shadow transition" style="border-radius: 12px; border-color: #e2ece6 !important;">
+                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 64px; height: 64px; background-color: #eaf6ef; color: #168447;">
+                            <i class="bi {{ cat.icon }} fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold text-navy mb-2">{{ cat.name }}</h5>
+                        <p class="small text-muted mb-3">{{ cat.desc }}</p>
+                        <span class="badge bg-light text-navy border py-2 px-3 fw-semibold">
+                            <i class="bi bi-geo-fill text-success me-1"></i> {{ cat.count }} Active Turf{{ cat.count|pluralize }}
+                        </span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Turfs Section -->
+<section class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+            <div>
+                <span class="text-success fw-bold text-uppercase small">Handpicked Venues</span>
+                <h2 class="fw-bold mt-1 mb-0">Featured Turfs in Chhatrapati Sambhajinagar</h2>
+            </div>
+            <a href="{% url 'turf_list' %}" class="btn btn-outline-custom">
+                View All Venues <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for turf in featured_turfs %}
+            <div class="col-md-6 col-lg-4">
+                <div class="turf-card">
+                    <div class="turf-card-img-wrapper">
+                        {% if turf.featured_image %}
+                            <img src="{{ turf.featured_image.url }}" alt="{{ turf.name }}" class="turf-card-img">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1529900240041-22f114d18eb1?auto=format&fit=crop&w=800&q=80" alt="{{ turf.name }}" class="turf-card-img">
+                        {% endif %}
+                        <span class="turf-card-badge">{{ turf.turf_type }}</span>
+                        <div class="turf-card-price">
+                            ₹{{ turf.hourly_price|floatformat:0 }} <small class="text-muted fw-normal">/ hour</small>
+                        </div>
+                    </div>
+
+                    <div class="turf-card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h5 class="turf-card-title mb-0">{{ turf.name }}</h5>
+                            <span class="badge bg-warning text-dark fw-bold">
+                                <i class="bi bi-star-fill text-dark me-1"></i>
+                                {% if turf.average_rating > 0 %}{{ turf.average_rating }}{% else %}4.8{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="turf-card-location">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <span>{{ turf.area }}, {{ turf.city }}</span>
+                        </div>
+
+                        <div class="mb-3">
+                            {% for sport in turf.get_sports_list %}
+                                <span class="badge-sport">{{ sport }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3 d-flex flex-wrap gap-1">
+                            {% for facility in turf.get_facilities_list|slice:":3" %}
+                                <span class="badge-facility"><i class="bi bi-check-circle-fill text-success"></i> {{ facility }}</span>
+                            {% endfor %}
+                        </div>
+
+                        {% if turf.is_demo %}
+                            <div class="mb-2">
+                                <span class="badge-demo"><i class="bi bi-info-circle"></i> Demonstration Listing</span>
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">
+                                <i class="bi bi-clock me-1"></i> {{ turf.opening_time|time:"h:i A" }} - {{ turf.closing_time|time:"h:i A" }}
+                            </span>
+                            <a href="{% url 'turf_detail' slug=turf.slug %}" class="btn btn-primary-custom btn-sm">
+                                Book Slot <i class="bi bi-chevron-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">No turfs listed yet. Run <code>python manage.py seed_demo_data</code> to populate demonstration arenas!</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5" style="background-color: #ffffff;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="text-success fw-bold text-uppercase small">Simple 4-Step Process</span>
+            <h2 class="fw-bold mt-1">How MiniTurf Arena Works</h2>
+            <p class="text-muted">Effortless booking from browsing slots to taking the pitch.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 70px; height: 70px; background-color: #eaf6ef; color: #168447; border: 2px dashed #168447;">
+                        <span class="fs-3 fw-bold">1</span>
+                    </div>
+                    <h5 class="fw-bold text-navy">Find Your Turf</h5>
+                    <p class="text-muted small">Filter by sport, location, size, and amenities across Sambhajinagar.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 70px; height: 70px; background-color: #eaf6ef; color: #168447; border: 2px dashed #168447;">
+                        <span class="fs-3 fw-bold">2</span>
+                    </div>
+                    <h5 class="fw-bold text-navy">Pick Real-Time Slot</h5>
+                    <p class="text-muted small">Select your match date and pick an available hourly slot dynamically.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 70px; height: 70px; background-color: #eaf6ef; color: #168447; border: 2px dashed #168447;">
+                        <span class="fs-3 fw-bold">3</span>
+                    </div>
+                    <h5 class="fw-bold text-navy">Scan UPI QR Code</h5>
+                    <p class="text-muted small">Pay using Google Pay, PhonePe, or Paytm and submit your UTR reference ID.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 70px; height: 70px; background-color: #eaf6ef; color: #168447; border: 2px dashed #168447;">
+                        <span class="fs-3 fw-bold">4</span>
+                    </div>
+                    <h5 class="fw-bold text-navy">Get Verified & Play</h5>
+                    <p class="text-muted small">Turf manager verifies payment, print your match receipt, and hit the ground!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5" style="background-color: #F5F8F6;">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <span class="text-success fw-bold text-uppercase small">Built For Players & Managers</span>
+                <h2 class="fw-bold mt-1 mb-3">Engineered for Fair Play and Zero Double-Bookings</h2>
+                <p class="text-muted mb-4">
+                    Our platform uses server-side atomic database locks to eliminate booking collisions. Whether you are hosting a late-night tournament or an evening casual box match, MiniTurf ensures your slot is secured.
+                </p>
+
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="p-2 rounded bg-white text-success shadow-sm border"><i class="bi bi-shield-lock-fill fs-4"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Double-Booking Protection</h6>
+                        <p class="small text-muted mb-0">Database transaction locks ensure two users cannot confirm the same slot simultaneously.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="p-2 rounded bg-white text-warning shadow-sm border"><i class="bi bi-clock-history fs-4"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Transparent 30-Minute Cancellation</h6>
+                        <p class="small text-muted mb-0">Cancel easily up to 30 minutes before match kickoff. Inside 30 minutes, slots lock to ensure arena readiness.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3">
+                    <div class="p-2 rounded bg-white text-primary shadow-sm border"><i class="bi bi-qr-code fs-4"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Real UPI QR Verification</h6>
+                        <p class="small text-muted mb-0">No fake gateways. Turf owners inspect UTR IDs and payment screenshots to approve bookings.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 16px;">
+                    <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80" alt="Turf Floodlights" class="img-fluid">
+                    <div class="card-body p-4 bg-white">
+                        <div class="row text-center g-2">
+                            <div class="col-4 border-end">
+                                <h4 class="fw-extrabold text-navy mb-0">100%</h4>
+                                <small class="text-muted">Floodlit Turfs</small>
+                            </div>
+                            <div class="col-4 border-end">
+                                <h4 class="fw-extrabold text-success mb-0">&lt; 30s</h4>
+                                <small class="text-muted">Booking Flow</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="fw-extrabold text-navy mb-0">₹0</h4>
+                                <small class="text-muted">Hidden Fees</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Player Testimonials -->
+{% if testimonials %}
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="text-success fw-bold text-uppercase small">Real Player Feedback</span>
+            <h2 class="fw-bold mt-1">What Players Are Saying</h2>
+        </div>
+
+        <div class="row g-4">
+            {% for review in testimonials %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 p-4 border shadow-sm" style="border-radius: 12px;">
+                    <div class="text-warning mb-2">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="bi bi-star-fill"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="small text-muted mb-3 italic">"{{ review.comment|truncatewords:20 }}"</p>
+                    <div class="mt-auto d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                            {{ review.customer.first_name|first|default:review.customer.username|first|upper }}
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-navy">{{ review.customer.first_name|default:review.customer.username }}</div>
+                            <div class="small text-muted" style="font-size: 0.75rem;">Played at {{ review.turf.name }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Turf Owner CTA -->
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #102A43 0%, #168447 100%);">
+    <div class="container text-center py-3">
+        <h2 class="fw-bold text-white mb-2">Do You Own A Sports Turf in Sambhajinagar?</h2>
+        <p class="lead text-white-50 mb-4 mx-auto" style="max-width: 650px;">
+            Manage online slots, receive direct UPI QR payments, block dates for maintenance, and monitor your monthly revenues in one dedicated Turf Owner Dashboard.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'owner_register' %}" class="btn btn-warning btn-lg fw-bold text-dark px-4 py-2">
+                <i class="bi bi-building-add me-1"></i> Register Your Turf Arena
+            </a>
+            <a href="{% url 'owner_login' %}" class="btn btn-outline-light btn-lg fw-bold px-4 py-2">
+                <i class="bi bi-shield-lock me-1"></i> Owner Login
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

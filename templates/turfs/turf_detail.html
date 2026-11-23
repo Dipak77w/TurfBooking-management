@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ turf.name }} - Book Online | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-4" style="background-color: #F5F8F6;">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'turf_list' %}">Explore Turfs</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ turf.name }}</li>
+            </ol>
+        </nav>
+
+        <!-- Turf Title Header -->
+        <div class="card p-4 border shadow-sm bg-white mb-4" style="border-radius: 14px;">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="badge bg-success px-3 py-2 fs-6">{{ turf.turf_type }}</span>
+                        {% if turf.is_demo %}
+                            <span class="badge-demo"><i class="bi bi-info-circle"></i> Demonstration Listing</span>
+                        {% endif %}
+                        <span class="badge bg-warning text-dark fw-bold px-3 py-2">
+                            <i class="bi bi-star-fill text-dark me-1"></i>
+                            {% if turf.average_rating > 0 %}{{ turf.average_rating }}{% else %}4.8{% endif %} / 5.0 ({{ turf.total_reviews }} review{{ turf.total_reviews|pluralize }})
+                        </span>
+                    </div>
+                    <h1 class="fw-extrabold text-navy display-6 mb-1">{{ turf.name }}</h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ turf.address }}, {{ turf.area }}, {{ turf.city }}
+                    </p>
+                </div>
+
+                <div class="text-lg-end">
+                    <div class="text-muted small">Hourly Price</div>
+                    <div class="fs-2 fw-extrabold text-success">₹{{ turf.hourly_price|floatformat:0 }} <small class="text-muted fs-6 fw-normal">/ hour</small></div>
+                    <div class="small text-muted"><i class="bi bi-telephone text-success me-1"></i> Contact: {{ turf.contact_number }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column: Gallery, Specs, Amenities, Location, Reviews -->
+            <div class="col-lg-7">
+                <!-- Gallery Carousel -->
+                <div class="card border shadow-sm bg-white overflow-hidden mb-4" style="border-radius: 14px;">
+                    <div id="turfCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner" style="max-height: 420px; background-color: #000;">
+                            {% if turf.featured_image %}
+                                <div class="carousel-item active">
+                                    <img src="{{ turf.featured_image.url }}" class="d-block w-100" style="object-fit: cover; height: 420px;" alt="{{ turf.name }}">
+                                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                        <p class="mb-0 fw-semibold">{{ turf.name }} - Main Arena</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="carousel-item active">
+                                    <img src="https://images.unsplash.com/photo-1529900240041-22f114d18eb1?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" style="object-fit: cover; height: 420px;" alt="{{ turf.name }}">
+                                </div>
+                            {% endif %}
+
+                            {% for img in images %}
+                                <div class="carousel-item">
+                                    <img src="{{ img.image.url }}" class="d-block w-100" style="object-fit: cover; height: 420px;" alt="{{ img.caption|default:turf.name }}">
+                                    {% if img.caption %}
+                                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                        <p class="mb-0 fw-semibold">{{ img.caption }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if images %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#turfCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#turfCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Specs Strip -->
+                <div class="card p-3 border shadow-sm bg-white mb-4" style="border-radius: 12px;">
+                    <div class="row text-center g-3">
+                        <div class="col-sm-3 col-6 border-end">
+                            <div class="text-muted small">Dimensions</div>
+                            <div class="fw-bold text-navy"><i class="bi bi-aspect-ratio text-success me-1"></i> {{ turf.size }}</div>
+                        </div>
+                        <div class="col-sm-3 col-6 border-end">
+                            <div class="text-muted small">Operating Hours</div>
+                            <div class="fw-bold text-navy"><i class="bi bi-clock-history text-success me-1"></i> {{ turf.opening_time|time:"h:i A" }} - {{ turf.closing_time|time:"h:i A" }}</div>
+                        </div>
+                        <div class="col-sm-3 col-6 border-end">
+                            <div class="text-muted small">Slot Duration</div>
+                            <div class="fw-bold text-navy"><i class="bi bi-stopwatch text-success me-1"></i> {{ turf.slot_duration_minutes }} Mins</div>
+                        </div>
+                        <div class="col-sm-3 col-6">
+                            <div class="text-muted small">Payment Mode</div>
+                            <div class="fw-bold text-navy"><i class="bi bi-qr-code text-success me-1"></i> UPI QR Verified</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Sports & Facilities -->
+                <div class="card p-4 border shadow-sm bg-white mb-4" style="border-radius: 14px;">
+                    <h5 class="fw-bold text-navy mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Sports & Facilities</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Supported Sports</label>
+                        <div>
+                            {% for sport in turf.get_sports_list %}
+                                <span class="badge-sport fs-6 py-2 px-3"><i class="bi bi-check-circle me-1"></i> {{ sport }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label small text-muted text-uppercase fw-bold">Arena Amenities & Facilities</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for fac in turf.get_facilities_list %}
+                                <span class="badge-facility fs-6 py-2 px-3"><i class="bi bi-shield-check text-success me-1"></i> {{ fac }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description & Ground Rules -->
+                <div class="card p-4 border shadow-sm bg-white mb-4" style="border-radius: 14px;">
+                    <h5 class="fw-bold text-navy mb-3"><i class="bi bi-card-text text-primary me-2"></i>About This Arena</h5>
+                    <p class="text-muted" style="white-space: pre-line;">{{ turf.description }}</p>
+
+                    <h6 class="fw-bold text-navy mt-4 mb-2"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Rules & Guidelines</h6>
+                    <div class="p-3 bg-light rounded border text-muted small" style="white-space: pre-line;">
+                        {{ turf.rules_and_regulations }}
+                    </div>
+                </div>
+
+                <!-- Location Map Embed / Link -->
+                <div class="card p-4 border shadow-sm bg-white mb-4" style="border-radius: 14px;">
+                    <h5 class="fw-bold text-navy mb-3"><i class="bi bi-map-fill text-danger me-2"></i>Ground Location</h5>
+                    <p class="text-muted mb-3"><i class="bi bi-geo-alt text-danger me-1"></i> {{ turf.address }}</p>
+                    {% if turf.google_maps_url %}
+                        {% if "http" in turf.google_maps_url %}
+                            <a href="{{ turf.google_maps_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Open Google Maps Direction
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> Located near landmark area: {{ turf.area }}, Chhatrapati Sambhajinagar.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Customer Reviews Section -->
+                <div class="card p-4 border shadow-sm bg-white" style="border-radius: 14px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                        <h5 class="fw-bold text-navy mb-0"><i class="bi bi-chat-quote-fill text-success me-2"></i>Player Reviews ({{ turf.total_reviews }})</h5>
+                        <span class="badge bg-warning text-dark fw-bold fs-6">
+                            ★ {% if turf.average_rating > 0 %}{{ turf.average_rating }}{% else %}4.8{% endif %} / 5
+                        </span>
+                    </div>
+
+                    {% for rev in reviews %}
+                        <div class="border-bottom py-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="fw-bold text-navy">
+                                    <i class="bi bi-person-circle text-secondary me-1"></i> {{ rev.customer.first_name|default:rev.customer.username }}
+                                </div>
+                                <div class="text-warning small">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= rev.rating %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-1">{{ rev.comment }}</p>
+                            <div class="small text-muted" style="font-size: 0.72rem;">Reviewed on {{ rev.created_at|date:"d M Y" }}</div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center py-3">No player reviews yet. Be the first to play and leave feedback!</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Column: Interactive Real-Time Booking Engine -->
+            <div class="col-lg-5">
+                <div class="card p-4 border shadow-lg bg-white sticky-top" style="top: 90px; border-radius: 16px; border-color: #b5dec6 !important;">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                        <h4 class="fw-extrabold text-navy mb-0">
+                            <i class="bi bi-calendar2-check-fill text-success me-2"></i>Reserve Slot
+                        </h4>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Instant Hold</span>
+                    </div>
+
+                    <form action="{% url 'initiate_booking' slug=turf.slug %}" method="POST" id="booking-form">
+                        {% csrf_token %}
+                        
+                        <!-- 1. Match Date Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">1. Select Match Date</label>
+                            <input type="date" 
+                                   id="booking-date-input" 
+                                   name="booking_date" 
+                                   value="{{ today_date }}" 
+                                   min="{{ today_date }}" 
+                                   data-turf-slug="{{ turf.slug }}"
+                                   class="form-control fw-bold text-navy" 
+                                   required>
+                            <small class="text-muted">Slots update automatically on date change.</small>
+                        </div>
+
+                        <!-- 2. Dynamic Slots Grid -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label mb-0">2. Pick Available Hourly Slot</label>
+                                <span class="small text-muted" id="slots-legend">
+                                    <span class="badge bg-light text-dark border">Available</span>
+                                    <span class="badge bg-secondary">Booked</span>
+                                </span>
+                            </div>
+
+                            <!-- Slots Container loaded via AJAX / initial -->
+                            <div id="slots-container" class="slots-container" style="max-height: 260px; overflow-y: auto; padding: 4px;">
+                                {% for slot in initial_slots %}
+                                    {% if slot.is_available %}
+                                        <button type="button" class="slot-btn" 
+                                                data-start="{{ slot.start_time }}" 
+                                                data-end="{{ slot.end_time }}"
+                                                data-display="{{ slot.display_time }}"
+                                                data-price="{{ slot.price }}">
+                                            <i class="bi bi-clock"></i>
+                                            <span>{{ slot.display_time }}</span>
+                                            <span class="slot-price-label">₹{{ slot.price }}</span>
+                                        </button>
+                                    {% else %}
+                                        <div class="slot-btn disabled">
+                                            <i class="bi bi-dash-circle"></i>
+                                            <span>{{ slot.display_time }}</span>
+                                            <span class="badge bg-secondary" style="font-size: 0.65rem;">{{ slot.status_label }}</span>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields populated by clicking a slot button -->
+                        <input type="hidden" name="start_time" id="id_start_time" required>
+                        <input type="hidden" name="end_time" id="id_end_time" required>
+
+                        <!-- Selected Slot Summary Box -->
+                        <div id="slot-summary-box" class="p-3 rounded mb-3 d-none border" style="background-color: #f0fbf5; border-color: #b5dec6 !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small text-muted">Selected Slot:</span>
+                                <strong class="text-navy" id="selected-slot-text">--</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">Total Payable:</span>
+                                <strong class="text-success fs-5" id="selected-slot-price">₹{{ turf.hourly_price }}</strong>
+                            </div>
+                        </div>
+
+                        <!-- 3. Sport Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">3. Sport Being Played</label>
+                            <select name="sport" class="form-select" required>
+                                {% for sport in turf.get_sports_list %}
+                                    <option value="{{ sport }}">{{ sport }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- 4. Team Captain / Player Contact Details -->
+                        <div class="mb-3">
+                            <label class="form-label">4. Captain / Player Name</label>
+                            <input type="text" name="player_name" class="form-control" 
+                                   value="{% if user.is_authenticated %}{{ user.profile.full_name }}{% endif %}" 
+                                   placeholder="Full name of booking person" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Contact Mobile Number</label>
+                            <input type="tel" name="player_phone" class="form-control" 
+                                   value="{% if user.is_authenticated %}{{ user.profile.phone }}{% endif %}" 
+                                   placeholder="+91 98765 43210" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email for Booking Receipt (Optional)</label>
+                            <input type="email" name="player_email" class="form-control" 
+                                   value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" 
+                                   placeholder="captain@example.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Special Requests (Optional)</label>
+                            <textarea name="special_notes" class="form-control" rows="2" placeholder="e.g. Need football pump / extra bibs"></textarea>
+                        </div>
+
+                        <!-- Submit CTA -->
+                        {% if user.is_authenticated %}
+                            {% if is_turf_owner %}
+                                <div class="alert alert-warning small">
+                                    <i class="bi bi-info-circle"></i> You are logged in as a Turf Owner. To book a slot as a customer, please log in with a customer account.
+                                </div>
+                            {% else %}
+                                <button type="submit" id="submit-booking-btn" class="btn btn-primary-custom w-100 py-3 fs-6" disabled>
+                                    <i class="bi bi-arrow-right-circle-fill me-1"></i> Proceed to UPI QR Payment
+                                </button>
+                                <small class="text-muted d-block text-center mt-2">
+                                    <i class="bi bi-shield-check text-success"></i> Slot locked with atomic transaction guarantee.
+                                </small>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'customer_login' %}?next={{ request.path }}" class="btn btn-primary-custom w-100 py-3 fs-6">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Login as Player to Book
+                            </a>
+                            <small class="text-muted d-block text-center mt-2">Free registration takes only 20 seconds.</small>
+                        {% endif %}
+                    </form>
+
+                    <!-- Cancellation Policy Reminder -->
+                    <div class="mt-4 pt-3 border-top small text-muted">
+                        <div class="fw-bold text-navy mb-1"><i class="bi bi-clock-history text-warning"></i> Cancellation Policy:</div>
+                        Bookings can be cancelled up to <strong>30 minutes before</strong> match start time for slot release.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

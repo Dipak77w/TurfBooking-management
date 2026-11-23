@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}Player Dashboard | MiniTurf Arena{% endblock %}
+
+{% block content %}
+<div class="py-4" style="background-color: #F5F8F6;">
+    <div class="container">
+        <!-- Dashboard Welcome Banner -->
+        <div class="card p-4 border shadow-sm bg-white mb-4" style="border-radius: 16px;">
+            <div class="row align-items-center g-3">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold fs-2" style="width: 64px; height: 64px;">
+                            {{ user.first_name|first|default:user.username|first|upper }}
+                        </div>
+                        <div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 mb-1">Player Portal</span>
+                            <h3 class="fw-bold text-navy mb-0">Welcome, {{ user.first_name|default:user.username }}!</h3>
+                            <p class="text-muted small mb-0"><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ profile.city }} | {{ profile.phone|default:"No phone configured" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="d-flex justify-content-md-end gap-3 text-center">
+                        <div class="p-2 border rounded bg-light px-3">
+                            <span class="small text-muted d-block">Total Matches</span>
+                            <strong class="fs-4 text-navy">{{ total_bookings_count }}</strong>
+                        </div>
+                        <div class="p-2 border rounded bg-light px-3">
+                            <span class="small text-muted d-block">Confirmed</span>
+                            <strong class="fs-4 text-success">{{ confirmed_count }}</strong>
+                        </div>
+                        <div class="p-2 border rounded bg-light px-3">
+                            <span class="small text-muted d-block">Total Spent</span>
+                            <strong class="fs-4 text-primary">₹{{ total_spent|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tabs: Upcoming, Past, Cancelled -->
+        <div class="card border shadow-sm bg-white" style="border-radius: 16px; overflow: hidden;">
+            <div class="card-header bg-white border-bottom pt-3 pb-0">
+                <ul class="nav nav-tabs border-bottom-0" id="bookingTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold py-3 px-4" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">
+                            <i class="bi bi-calendar-check text-success me-1"></i> Upcoming Matches ({{ upcoming_bookings|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold py-3 px-4" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab">
+                            <i class="bi bi-clock-history text-secondary me-1"></i> Completed & Past ({{ past_bookings|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold py-3 px-4" id="cancelled-tab" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab">
+                            <i class="bi bi-x-circle text-danger me-1"></i> Cancelled & Rejected ({{ cancelled_bookings|length }})
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="tab-content" id="bookingTabsContent">
+                    
+                    <!-- TAB 1: UPCOMING BOOKINGS -->
+                    <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+                        {% if upcoming_bookings %}
+                            <div class="row g-3">
+                                {% for b in upcoming_bookings %}
+                                    <div class="col-12">
+                                        <div class="card border p-3 shadow-sm hover-shadow transition" style="border-radius: 12px; border-color: #d8e2dc !important;">
+                                            <div class="row align-items-center g-3">
+                                                <div class="col-md-4">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <span class="badge bg-secondary font-monospace">{{ b.booking_id }}</span>
+                                                        {% if b.status == 'CONFIRMED' %}
+                                                            <span class="status-badge-confirmed"><i class="bi bi-check-circle-fill"></i> Confirmed</span>
+                                                        {% else %}
+                                                            <span class="status-badge-pending"><i class="bi bi-hourglass-split"></i> Pending Verification</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <h5 class="fw-bold text-navy mb-1">{{ b.turf.name }}</h5>
+                                                    <p class="small text-muted mb-0"><i class="bi bi-geo-alt text-danger me-1"></i> {{ b.turf.area }}, {{ b.turf.city }}</p>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <div class="small text-muted"><i class="bi bi-calendar3 text-success me-1"></i> {{ b.booking_date|date:"l, d M Y" }}</div>
+                                                    <div class="fw-bold text-navy"><i class="bi bi-clock text-success me-1"></i> {{ b.slot_display }}</div>
+                                                    <div class="small text-muted mt-1">Sport: <strong>{{ b.sport }}</strong></div>
+                                                </div>
+
+                                                <div class="col-md-2 text-md-center">
+                                                    <span class="text-muted small d-block">Amount:</span>
+                                                    <span class="fs-5 fw-bold text-success">₹{{ b.total_price|floatformat:0 }}</span>
+                                                    <div class="small text-muted font-monospace" style="font-size: 0.75rem;">
+                                                        Ref: {{ b.payment.upi_reference_id|default:"Pending" }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-3 text-md-end">
+                                                    <div class="d-flex flex-column gap-2 justify-content-end">
+                                                        <a href="{% url 'booking_receipt' booking_id=b.booking_id %}" class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-printer me-1"></i> Print Receipt
+                                                        </a>
+
+                                                        {% if b.status == 'PENDING' and not b.payment.upi_reference_id %}
+                                                            <a href="{% url 'checkout_payment' booking_id=b.booking_id %}" class="btn btn-warning btn-sm text-dark fw-bold">
+                                                                <i class="bi bi-qr-code me-1"></i> Submit UPI Proof
+                                                            </a>
+                                                        {% endif %}
+
+                                                        <!-- Cancellation Policy Engine Check -->
+                                                        {% if b.is_cancellable %}
+                                                            <a href="{% url 'cancel_booking' booking_id=b.booking_id %}" class="btn btn-outline-danger btn-sm">
+                                                                <i class="bi bi-x-octagon me-1"></i> Cancel Booking
+                                                            </a>
+                                                        {% else %}
+                                                            <button class="btn btn-light btn-sm text-muted border" disabled title="Cannot cancel within 30 minutes of match start">
+                                                                <i class="bi bi-lock-fill me-1"></i> Cancellation Locked (&lt;30m)
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-calendar-plus fs-1 text-muted"></i>
+                                <h5 class="fw-bold text-navy mt-2">No upcoming matches scheduled</h5>
+                                <p class="text-muted small">Ready to play? Explore top floodlit turfs in Sambhajinagar.</p>
+                                <a href="{% url 'turf_list' %}" class="btn btn-primary-custom btn-sm">
+                                    <i class="bi bi-grid me-1"></i> Book a Turf Slot
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- TAB 2: COMPLETED & PAST BOOKINGS -->
+                    <div class="tab-pane fade" id="past" role="tabpanel">
+                        {% if past_bookings %}
+                            <div class="row g-3">
+                                {% for b in past_bookings %}
+                                    <div class="col-12">
+                                        <div class="card border p-3 bg-light" style="border-radius: 12px;">
+                                            <div class="row align-items-center g-3">
+                                                <div class="col-md-4">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <span class="badge bg-secondary font-monospace">{{ b.booking_id }}</span>
+                                                        <span class="status-badge-completed"><i class="bi bi-check2-all"></i> Completed</span>
+                                                    </div>
+                                                    <h5 class="fw-bold text-navy mb-0">{{ b.turf.name }}</h5>
+                                                    <p class="small text-muted mb-0">{{ b.turf.area }}, {{ b.turf.city }}</p>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <div class="small text-muted">{{ b.booking_date|date:"D, d M Y" }}</div>
+                                                    <div class="fw-bold text-navy">{{ b.slot_display }}</div>
+                                                    <div class="small text-muted">Sport: {{ b.sport }}</div>
+                                                </div>
+
+                                                <div class="col-md-2 text-md-center">
+                                                    <span class="text-muted small d-block">Paid:</span>
+                                                    <span class="fw-bold text-success">₹{{ b.total_price|floatformat:0 }}</span>
+                                                </div>
+
+                                                <div class="col-md-3 text-md-end">
+                                                    <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                                        <a href="{% url 'booking_receipt' booking_id=b.booking_id %}" class="btn btn-outline-secondary btn-sm">
+                                                            <i class="bi bi-receipt me-1"></i> Receipt
+                                                        </a>
+                                                        
+                                                        {% if not b.turf_review %}
+                                                            <a href="{% url 'submit_review' booking_id=b.booking_id %}" class="btn btn-outline-success btn-sm">
+                                                                <i class="bi bi-star-fill text-warning me-1"></i> Review Turf
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="badge bg-success-subtle text-success border py-2">
+                                                                <i class="bi bi-star-fill text-warning me-1"></i> Rated {{ b.turf_review.rating }}★
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-clock-history fs-2"></i>
+                                <p class="mt-2">No completed bookings yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- TAB 3: CANCELLED & REJECTED BOOKINGS -->
+                    <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                        {% if cancelled_bookings %}
+                            <div class="row g-3">
+                                {% for b in cancelled_bookings %}
+                                    <div class="col-12">
+                                        <div class="card border p-3" style="border-radius: 12px; border-color: #fed7aa !important; background-color: #fffaf0;">
+                                            <div class="row align-items-center g-3">
+                                                <div class="col-md-4">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <span class="badge bg-secondary font-monospace">{{ b.booking_id }}</span>
+                                                        {% if b.status == 'CANCELLED' %}
+                                                            <span class="status-badge-cancelled"><i class="bi bi-x-circle"></i> Cancelled</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger"><i class="bi bi-slash-circle"></i> Payment Rejected</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <h6 class="fw-bold text-navy mb-0">{{ b.turf.name }}</h6>
+                                                    <p class="small text-muted mb-0">{{ b.turf.area }}</p>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="small text-muted">Scheduled for: {{ b.booking_date|date:"d M Y" }} ({{ b.slot_display }})</div>
+                                                    <div class="small text-danger mt-1">
+                                                        <strong>Reason:</strong> {{ b.cancellation_reason|default:b.payment.rejection_reason|default:"Cancelled as per policy" }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4 text-md-end">
+                                                    <a href="{% url 'turf_detail' slug=b.turf.slug %}" class="btn btn-outline-success btn-sm">
+                                                        <i class="bi bi-arrow-repeat me-1"></i> Re-book Another Slot
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-check-circle fs-2 text-success"></i>
+                                <p class="mt-2">No cancelled bookings. Great playing record!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
