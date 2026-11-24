@@ -1,4 +1,4 @@
-# ⚽ MiniTurf Arena - Commercial Turf Booking & Management Platform
+ ⚽ MiniTurf Arena - Commercial Turf Booking & Management Platform
 
 A modern, responsive, commercial-grade **Turf Booking and Facility Management Web Application** built with **Python Django 6.1**, **SQLite**, and **Bootstrap 5.3**. Designed specifically for sports arenas, players, and turf operators across **Chhatrapati Sambhajinagar, Maharashtra**.
 
